@@ -14,6 +14,8 @@ import org.springframework.http.ResponseEntity;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.List;
 import java.util.UUID;
 
@@ -85,4 +87,23 @@ public class LearningProgressController {
             throw new RuntimeException("Error loading image: " + e.getMessage());
         }
     }
+    @GetMapping("/learningprogress/report/{userId}")
+    public List<LearningProgressModel> getLearningProgress(
+            @PathVariable String userId,
+            @RequestParam String startDate,
+            @RequestParam String endDate) throws ParseException {
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+        Date start = sdf.parse(startDate);
+
+        Calendar cal = Calendar.getInstance();
+        cal.setTime(sdf.parse(endDate));
+        cal.set(Calendar.HOUR_OF_DAY, 23);
+        cal.set(Calendar.MINUTE, 59);
+        cal.set(Calendar.SECOND, 59);
+        cal.set(Calendar.MILLISECOND, 999);
+        Date adjustedEnd = cal.getTime();
+
+        return learningProgressRepository.findByPostOwnerIDAndDateRange(userId, start, adjustedEnd);
+
+}
 }
